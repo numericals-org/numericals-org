@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/numericals-org/numericals-org/blob/main/ChatGPT%20Image%20Nov%208%2C%202025%2C%2005_24_58%20PM.png" alt="numericals" width="100%">
+</p><br/>
+
 # 💫 Numericals
 🛠️ Creating meaningful digital experiences — for us, and for you.
 

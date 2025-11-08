@@ -1,4 +1,4 @@
-# 💫 About Me:
+# 💫 Numericals:
 🛠️ Creating meaningful digital experiences — for us, and for you.
 
 

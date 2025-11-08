@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://svg-badge.vercel.app/api/text?text=Numericals&color=ffffff&background=000000&fontFamily=Quicksand&fontSize=36" alt="Numericals logo">
+</p><br/>
+
 # 💫 Numericals
 🛠️ Creating meaningful digital experiences — for us, and for you.
 

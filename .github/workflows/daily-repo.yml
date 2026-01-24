@@ -1,0 +1,73 @@
+name: Create 1 Repo Per Day
+
+on:
+  schedule:
+    - cron: "0 9 * * *"   # daily 9 AM UTC
+  workflow_dispatch:
+
+jobs:
+  create-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create repo and dynamic README
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          USERNAME="numericals-org"
+          WORKFLOW_FILE="daily-repo.yml"
+
+          START_DATE="2026-01-26"
+          END_DATE="2026-01-30"
+
+          TODAY=$(date -u +%F)
+
+          # If after end date → disable workflow
+          if [[ "$TODAY" > "$END_DATE" ]]; then
+            echo "End date passed. Disabling workflow."
+
+            curl -X PATCH \
+              -H "Authorization: token $GH_PAT" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/$USERNAME/$USERNAME/actions/workflows/$WORKFLOW_FILE \
+              -d '{"state":"disabled"}'
+
+            exit 0
+          fi
+
+          # If before start date → do nothing
+          if [[ "$TODAY" < "$START_DATE" ]]; then
+            echo "Before start date. Skipping."
+            exit 0
+          fi
+
+          # Calculate remaining days
+          START_TS=$(date -d "$TODAY" +%s)
+          END_TS=$(date -d "$END_DATE" +%s)
+          DAYS_LEFT=$(( (END_TS - START_TS) / 86400 + 1 ))
+
+          REPO_NAME="auto-repo-$TODAY"
+
+          echo "Creating repo: $REPO_NAME with $DAYS_LEFT days left"
+
+          # Create repo
+          curl -X POST https://api.github.com/user/repos \
+            -H "Authorization: token $GH_PAT" \
+            -H "Accept: application/vnd.github+json" \
+            -d "{
+              \"name\": \"$REPO_NAME\",
+              \"private\": false,
+              \"auto_init\": false,
+              \"description\": \"Leave notice repo for $TODAY\"
+            }"
+
+          README_CONTENT=$(echo -e "# Leave Notice\n\nWe are on leave for $DAYS_LEFT day(s).\n\nCreated on: $TODAY" | base64)
+
+          # Add README
+          curl -X PUT \
+            -H "Authorization: token $GH_PAT" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/$USERNAME/$REPO_NAME/contents/README.md \
+            -d "{
+              \"message\": \"Add leave notice README\",
+              \"content\": \"$README_CONTENT\"
+            }"

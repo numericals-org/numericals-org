@@ -2,7 +2,7 @@ name: Create 1 Repo Per Day
 
 on:
   schedule:
-    - cron: "0 9 * * *"   # daily 9 AM UTC
+    - cron: "0 9 * * *"
   workflow_dispatch:
 
 jobs:
@@ -14,6 +14,8 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           USERNAME="numericals-org"
+          REPO_OWNER="numericals-org"
+          WORKFLOW_REPO="numericals-org"
           WORKFLOW_FILE="daily-repo.yml"
 
           START_DATE="2026-01-26"
@@ -28,7 +30,7 @@ jobs:
             curl -X PATCH \
               -H "Authorization: token $GH_PAT" \
               -H "Accept: application/vnd.github+json" \
-              https://api.github.com/repos/$USERNAME/$USERNAME/actions/workflows/$WORKFLOW_FILE \
+              https://api.github.com/repos/$REPO_OWNER/$WORKFLOW_REPO/actions/workflows/$WORKFLOW_FILE \
               -d '{"state":"disabled"}'
 
             exit 0
@@ -40,7 +42,6 @@ jobs:
             exit 0
           fi
 
-          # Calculate remaining days
           START_TS=$(date -d "$TODAY" +%s)
           END_TS=$(date -d "$END_DATE" +%s)
           DAYS_LEFT=$(( (END_TS - START_TS) / 86400 + 1 ))
@@ -60,9 +61,14 @@ jobs:
               \"description\": \"Leave notice repo for $TODAY\"
             }"
 
-          README_CONTENT=$(echo -e "# Leave Notice\n\nWe are on leave for $DAYS_LEFT day(s).\n\nCreated on: $TODAY" | base64)
+          README_TEXT="# Leave Notice
 
-          # Add README
+          We are on leave for $DAYS_LEFT day(s).
+
+          Created on: $TODAY"
+
+          README_CONTENT=$(printf "%s" "$README_TEXT" | base64 -w 0)
+
           curl -X PUT \
             -H "Authorization: token $GH_PAT" \
             -H "Accept: application/vnd.github+json" \
@@ -70,4 +76,4 @@ jobs:
             -d "{
               \"message\": \"Add leave notice README\",
               \"content\": \"$README_CONTENT\"
-            }"
+              }"
